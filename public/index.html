@@ -1,0 +1,1002 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+<title>雪花膏 — 陪伴对话</title>
+<link rel="icon" href="/xuehuagao.png?v=3" />
+
+<!-- 性能：预加载立绘、开屏画卷与全部 4 张场景图，场景切换时不闪烁 -->
+<link rel="preload" as="image" href="/xuehuagao.png?v=3" fetchpriority="high" />
+<link rel="preload" as="image" href="/banner.png" fetchpriority="high" />
+<link rel="preload" as="image" href="/scenes/normal.png" />
+<link rel="preload" as="image" href="/scenes/cafe.png" />
+<link rel="preload" as="image" href="/scenes/rainy.png" />
+<link rel="preload" as="image" href="/scenes/thinking.png" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Noto+Serif+SC:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+<style>
+  /* ============================================================
+     雪花膏 · Galgame 对话页
+     设计语言：暖色 / 低饱和 / 衬线字体 / 纸张质感
+     ============================================================ */
+  :root{
+    --ink:#1d1813;
+    --ink-soft:#534739;
+    --pearl:#f6f1e6;
+    --pearl-line:rgba(247,236,207,.22);
+    --pearl-text:#f5ead0;
+    --pearl-dim:rgba(247,236,207,.72);   /* 次要文字：保证暗底对比度 ≥ 4.5 */
+    --gold:#c39851;
+    --shadow:0 18px 60px rgba(0,0,0,.35);
+    /* 安全区（viewport-fit=cover 下的刘海 / 底部指示条） */
+    --safe-top:env(safe-area-inset-top, 0px);
+    --safe-bottom:env(safe-area-inset-bottom, 0px);
+    --safe-left:env(safe-area-inset-left, 0px);
+    --safe-right:env(safe-area-inset-right, 0px);
+    /* 对话框在大屏的最大宽度（居中轴线，状态卡与之左对齐）；超宽屏档会加大 */
+    --dock-max:860px;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none !important}
+  html,body{
+    margin:0; padding:0; height:100%; overflow:hidden;
+    overscroll-behavior:none;   /* 防止横滑场景切换时触发页面回弹 */
+    font-family:"Noto Serif SC","Cormorant Garamond",Inter,serif;
+    color:var(--ink); background:#0d0a07;
+    -webkit-tap-highlight-color:transparent;
+  }
+  button{font-family:inherit}
+  :focus-visible{outline:2px solid #e8c886; outline-offset:2px; border-radius:6px}
+
+  .visually-hidden{
+    position:absolute; width:1px; height:1px; margin:-1px; padding:0;
+    overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+  }
+
+  /* ---------- 场景层：全屏背景（normal / cafe / rainy / thinking） ---------- */
+  .scenes{position:fixed; inset:0; z-index:0; overflow:hidden; background:#0d0a07;}
+  .scene{
+    position:absolute; inset:0;
+    background-size:cover; background-position:center;
+    opacity:0; transition:opacity 1.4s ease;
+    transform:scale(1.05);
+    will-change:opacity;
+    animation:kenburns 30s ease-in-out infinite alternate;
+  }
+  .scene.active{opacity:1}
+  @keyframes kenburns{
+    from{ transform:scale(1.05) translate(0,0); }
+    to  { transform:scale(1.12) translate(-1.5%,-1%); }
+  }
+  /* 每场景的氛围罩色（暖调、低饱和） */
+  .scene-overlay{
+    position:fixed; inset:0; z-index:1; pointer-events:none;
+    transition:background 1.4s ease;
+    background:linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,.15) 50%, rgba(0,0,0,.55) 100%);
+  }
+  body[data-scene="rainy"]    .scene-overlay{background:linear-gradient(180deg, rgba(20,30,40,.25), rgba(10,15,25,.65))}
+  body[data-scene="thinking"] .scene-overlay{background:linear-gradient(180deg, rgba(10,8,5,.20), rgba(0,0,0,.70))}
+  body[data-scene="cafe"]     .scene-overlay{background:linear-gradient(180deg, rgba(60,40,20,.10), rgba(20,15,8,.55))}
+
+  /* 雨天特效 */
+  .rain{position:fixed; inset:0; z-index:2; pointer-events:none; opacity:0; transition:opacity 1s;}
+  body[data-scene="rainy"] .rain{opacity:.55}
+  .rain span{
+    position:absolute; top:-20vh; width:1px; height:90px;
+    background:linear-gradient(180deg, transparent, rgba(200,220,240,.6));
+    animation:rain linear infinite;
+  }
+  @keyframes rain{
+    from{ transform:translateY(-10vh) }
+    to  { transform:translateY(120vh) }
+  }
+
+  /* 日常 / 咖啡馆的浮尘微粒 */
+  .dust{position:fixed; inset:0; pointer-events:none; z-index:2; opacity:.6;}
+  body[data-scene="rainy"] .dust{opacity:0}
+  .dust span{
+    position:absolute; width:3px; height:3px; border-radius:50%;
+    background:rgba(255,240,210,.7); box-shadow:0 0 6px rgba(255,240,210,.6);
+    animation:float linear infinite;
+  }
+  @keyframes float{
+    from{ transform:translateY(110vh) translateX(0); opacity:0 }
+    10%{opacity:.9} 90%{opacity:.9}
+    to  { transform:translateY(-10vh) translateX(40px); opacity:0 }
+  }
+
+  /* ---------- 舞台布局：顶栏 / 中部立绘区 / 底部对话框 ---------- */
+  .stage{
+    position:relative; z-index:10;
+    display:grid; grid-template-rows:auto 1fr auto;
+    height:100dvh;
+  }
+
+  /* 顶栏：品牌区（名称 + 当前场景） + 场景切换 */
+  /* 右侧内边距额外预留 48px：audio-immersion.js 会在右上角注入固定定位的圆形静音按钮 */
+  .topbar{
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;
+    padding: calc(18px + var(--safe-top)) calc(clamp(18px,3vw,40px) + 48px + var(--safe-right))
+             10px calc(clamp(18px,3vw,40px) + var(--safe-left));
+    color:#f7eccf;
+  }
+  .brand{display:flex; align-items:center; gap:12px; min-width:0;}
+  .brand img{
+    width:42px; height:42px; border-radius:50%; object-fit:cover; flex:none;
+    border:1px solid rgba(247,236,207,.5);
+    box-shadow:0 4px 14px rgba(0,0,0,.4);
+  }
+  .brand .txt b{
+    font-family:"Noto Serif SC",serif; font-weight:500;
+    font-size:20px; letter-spacing:.18em; display:block; line-height:1.2; color:#f7eccf;
+  }
+  .brand .txt span{
+    font-family:Inter,"Noto Serif SC",serif; font-weight:300;
+    font-size:11px; letter-spacing:.28em; opacity:.85; margin-top:3px; display:block;
+    white-space:nowrap;
+  }
+  .scene-switch{
+    display:flex; gap:8px; max-width:100%; overflow-x:auto; scrollbar-width:none;
+    overscroll-behavior-x:contain;   /* 横滑不向外层传染回弹 */
+    background:rgba(20,15,10,.45);
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    padding:6px; border-radius:999px;
+    border:1px solid rgba(247,236,207,.18);
+  }
+  .scene-switch::-webkit-scrollbar{display:none}
+  .scene-switch button{
+    background:transparent; color:#f3e6c8;
+    border:none; cursor:pointer; flex:none;
+    padding:7px 14px; border-radius:999px;
+    font-family:"Noto Serif SC",serif; font-size:12px; letter-spacing:.2em;
+    transition:background .25s, color .25s, opacity .25s; opacity:.75;
+  }
+  .scene-switch button:hover{opacity:1}
+  .scene-switch button.active{
+    background:#f3e6c8; color:#1d1813; opacity:1;
+    box-shadow:0 2px 10px rgba(0,0,0,.3);
+  }
+
+  /* 中部：状态卡 */
+  .middle{position:relative; min-height:0;}
+
+  .state-card{
+    position:absolute; left:clamp(20px,4vw,60px); bottom:24px; z-index:2;
+    color:#fff7e6; text-shadow:0 2px 18px rgba(0,0,0,.6);
+    max-width:min(52%, 600px);   /* 大屏限制绝对宽度，避免长标题横跨半屏 */
+  }
+  .state-card .en{
+    font-family:"Cormorant Garamond",serif; font-style:italic; font-weight:500;
+    font-size:clamp(40px, 6vw, 76px); line-height:1.02; color:#fff7e6;
+    overflow-wrap:break-word;   /* 长英文标题允许优雅换行，绝不溢出 */
+  }
+  .state-card .zh{
+    font-weight:300; letter-spacing:.5em; margin-top:8px; font-size:13px; opacity:.85;
+  }
+  .state-card .badge{
+    margin-top:14px;
+    display:inline-flex; gap:8px; align-items:center;
+    padding:6px 14px;
+    background:rgba(20,15,10,.45);
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    border:1px solid rgba(247,236,207,.35);
+    border-radius:999px;
+    font-family:Inter,sans-serif; font-size:11px; letter-spacing:.22em;
+    color:#f3e6c8;
+  }
+  .state-card .badge i{
+    width:6px; height:6px; border-radius:50%;
+    background:#9dd1a7; box-shadow:0 0 10px #9dd1a7;
+    transition:background .4s, box-shadow .4s;
+  }
+  body[data-scene="thinking"] .state-card .badge i{background:var(--gold); box-shadow:0 0 10px var(--gold); animation:pulse 1.4s ease-in-out infinite}
+  body[data-scene="rainy"]    .state-card .badge i{background:#8aa9c4; box-shadow:0 0 10px #8aa9c4}
+  @keyframes pulse{50%{opacity:.4}}
+
+  /* ---------- 底部对话框（Galgame dock） ---------- */
+  .dialog-dock{
+    position:relative; z-index:10;
+    padding: 0 calc(clamp(16px,4vw,60px) + var(--safe-right))
+             calc(clamp(18px,3vw,36px) + var(--safe-bottom))
+             calc(clamp(16px,4vw,60px) + var(--safe-left));
+  }
+  .dialog{
+    position:relative;
+    max-width:var(--dock-max); margin:0 auto;   /* 大屏限宽居中，小屏自然撑满 */
+    background:linear-gradient(180deg, rgba(20,15,10,.78) 0%, rgba(10,7,4,.85) 100%);
+    border:1px solid var(--pearl-line);
+    border-radius:18px;
+    padding:22px 26px 18px;
+    box-shadow:var(--shadow);
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    color:#f4ead3;
+  }
+  .dialog::before{   /* 说话人头像 */
+    content:""; position:absolute; top:-26px; left:24px;
+    width:48px; height:48px; border-radius:50%;
+    background:url('/xuehuagao.png?v=3') center/cover, #1d1813;
+    border:2px solid #1d1813;
+    box-shadow:0 4px 16px rgba(0,0,0,.5), 0 0 0 1px rgba(247,236,207,.4);
+  }
+  .dialog .speaker{
+    position:absolute; top:-18px; left:84px;
+    padding:4px 14px; border-radius:999px;
+    background:#1d1813; color:#f7eccf;
+    font-size:12px; letter-spacing:.22em;
+    border:1px solid rgba(247,236,207,.3);
+  }
+  .dialog .meta{
+    display:flex; justify-content:space-between; align-items:baseline; gap:12px;
+    margin-bottom:8px; color:var(--pearl-dim);
+    font-family:Inter,sans-serif; font-size:10px; letter-spacing:.22em; text-transform:uppercase;
+  }
+  .msg-time{letter-spacing:.14em}
+  .bubble{
+    min-height:80px; max-height:min(30vh, 380px); overflow-y:auto;
+    overscroll-behavior:contain;   /* 气泡内滚动不触发外层回弹 */
+    font-size:clamp(15px, 1.2vw, 17px);
+    line-height:1.9;
+    color:var(--pearl-text);
+    white-space:pre-wrap;
+    padding-right:6px;
+  }
+  .bubble::-webkit-scrollbar{width:6px}
+  .bubble::-webkit-scrollbar-thumb{background:rgba(247,236,207,.25); border-radius:6px}
+  .bubble .caret{
+    display:inline-block; width:.5em; height:1em; vertical-align:-2px;
+    background:var(--pearl-text); margin-left:2px;
+    animation:blink 1s steps(2) infinite;
+  }
+  @keyframes blink{50%{opacity:0}}
+  .bubble .failed-note{opacity:.65; font-style:italic}
+
+  /* 打字中指示：三枚暖色小点 */
+  .typing-dots{display:inline-flex; gap:6px; align-items:center; padding:6px 2px;}
+  .typing-dots i{
+    width:7px; height:7px; border-radius:50%;
+    background:rgba(247,236,207,.85);
+    animation:dotBounce 1.2s ease-in-out infinite;
+  }
+  .typing-dots i:nth-child(2){animation-delay:.15s}
+  .typing-dots i:nth-child(3){animation-delay:.3s}
+  @keyframes dotBounce{30%{transform:translateY(-5px); opacity:1} 60%{opacity:.45}}
+
+  /* 状态行：提示语 + 重试 / 历史 */
+  .status-row{
+    margin-top:10px;
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    font-family:Inter,"Noto Serif SC",sans-serif; font-size:11px; color:var(--pearl-dim);
+  }
+  .status-row .hint{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .status-actions{display:flex; gap:8px; flex:none;}
+  .status-actions button{
+    background:transparent; border:1px solid rgba(247,236,207,.3);
+    color:#f3e6c8; padding:4px 12px; border-radius:999px;
+    cursor:pointer; font-size:11px; letter-spacing:.18em;
+    transition:background .25s, color .25s;
+  }
+  .status-actions button:hover{background:#f3e6c8; color:#1d1813}
+  #retryBtn{
+    border-color:rgba(195,152,81,.7); color:#e8c886;
+    animation:pulse 1.6s ease-in-out infinite;
+  }
+  #retryBtn:hover{background:var(--gold); color:#fff}
+
+  /* 输入区：Enter 发送 / Shift+Enter 换行 */
+  .input-bar{
+    margin-top:14px;
+    display:flex; gap:10px; align-items:flex-end;
+    background:rgba(247,236,207,.1);
+    border:1px solid rgba(247,236,207,.25);
+    border-radius:14px;
+    padding:10px 12px;
+  }
+  .input-bar textarea{
+    flex:1; min-width:0; border:none; background:transparent; outline:none; resize:none;
+    /* 16px：iOS Safari 聚焦小于 16px 的输入框会自动放大页面 */
+    font-family:"Noto Serif SC",Inter,serif; font-size:16px; line-height:1.6;
+    color:var(--pearl-text); max-height:120px; padding:2px 4px;
+  }
+  .input-bar textarea::placeholder{color:rgba(247,236,207,.55); font-style:italic}
+  .input-bar button{
+    border:none; cursor:pointer; flex:none;
+    background:#f3e6c8; color:#1d1813;
+    padding:9px 18px; border-radius:10px;
+    font-size:14px; letter-spacing:.2em;
+    transition:transform .15s, background .25s, color .25s;
+  }
+  .input-bar button:hover:not(:disabled){background:var(--gold); color:#fff}
+  .input-bar button:active:not(:disabled){transform:scale(.96)}
+  .input-bar button:disabled{opacity:.45; cursor:not-allowed}
+
+  /* ---------- 历史面板（模态） ---------- */
+  .history-panel{
+    position:fixed; inset:0; z-index:50;
+    background:rgba(10,7,4,.7);
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    display:none; align-items:center; justify-content:center;
+    padding:4vh 4vw;
+  }
+  .history-panel.open{display:flex}
+  .history-panel .sheet{
+    width:min(720px,100%); max-height:92vh; overflow-y:auto;
+    background:var(--pearl); color:var(--ink);
+    border-radius:18px; padding:28px 30px;
+    box-shadow:var(--shadow);
+  }
+  .history-panel h3{
+    margin:0 0 18px; font-weight:500; font-size:26px; color:var(--ink); letter-spacing:.08em;
+  }
+  .history-panel .turn{margin-bottom:14px; line-height:1.7; font-size:14px;}
+  .history-panel .turn .who{
+    display:inline-block; font-family:"Noto Serif SC",serif; font-size:11px;
+    letter-spacing:.12em; padding:2px 10px; border-radius:99px;
+    margin-right:8px; vertical-align:1px;
+  }
+  .history-panel .turn .when{
+    font-family:Inter,sans-serif; font-size:10px; color:#9b8c72; margin-right:8px; letter-spacing:.08em;
+  }
+  .turn.user .who{background:#d6c8a8; color:#3a2f1c}
+  .turn.assistant .who{background:var(--ink); color:#f6eccd}
+  .history-panel .empty{color:#7a6c54; font-style:italic}
+  .history-panel .close{
+    float:right; background:transparent; border:1px solid var(--ink);
+    border-radius:99px; padding:4px 12px; cursor:pointer; font-size:12px;
+    color:var(--ink);
+  }
+
+  /* ---------- 开屏帘：画卷展开 ---------- */
+  .opening{
+    position:fixed; inset:0; z-index:80;
+    background:
+      radial-gradient(120% 90% at 50% 0%, rgba(90,66,38,.28) 0%, transparent 55%),
+      linear-gradient(160deg,#1f1812 0%, #3a2c1c 100%);
+    color:#f7eccf;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    transition:opacity 1.2s ease, transform 1.2s ease;
+    text-align:center; padding:24px;
+    --rod-w:18px;                    /* 画轴直径 */
+    --unroll:1.9s cubic-bezier(.25,.75,.25,1);   /* 展开时长与缓出，与开屏音呼应 */
+  }
+  /* 画卷主体：横幅 + 两端画轴 */
+  .scroll-painting{
+    position:relative;
+    width:min(92vw, 1100px);
+    aspect-ratio:1916 / 821;         /* 保持 banner 原始宽高比 */
+    animation:paintingIn .6s ease-out both;
+  }
+  @keyframes paintingIn{ from{ opacity:0; transform:translateY(10px) scale(.985); } }
+  /* 画幅：clip-path 从中央窄缝向两侧展开；动画由 JS 在图片就绪后加 .is-ready 触发 */
+  .scroll-canvas{
+    position:absolute; inset:0; overflow:hidden;
+    border-radius:2px;
+    clip-path:inset(0 0 round 2px);
+    /* 收尾装裱感：描金细边框 + 柔和投影（动画前 75% 保持透明，见 mountGlow） */
+    border:1px solid rgba(195,152,81,.55);
+    box-shadow:0 24px 60px rgba(0,0,0,.5), 0 4px 18px rgba(0,0,0,.35);
+    animation:mountGlow var(--unroll) both;
+  }
+  @keyframes mountGlow{
+    0%, 75%{ box-shadow:0 0 0 rgba(0,0,0,0); border-color:rgba(195,152,81,0); }
+  }
+  .opening.is-ready .scroll-canvas{
+    animation:unfurl var(--unroll) both, mountGlow var(--unroll) both;
+  }
+  @keyframes unfurl{
+    from{ clip-path:inset(0 calc(50% - 6px) round 2px); }   /* 中央一条窄缝 */
+  }
+  .scroll-art{ width:100%; height:100%; display:block; object-fit:cover; }
+  /* 随展开掠过的纸张光泽 */
+  .scroll-sheen{
+    position:absolute; inset:0; pointer-events:none; opacity:0;
+    background:linear-gradient(105deg, transparent 40%, rgba(255,244,214,.32) 50%, transparent 60%);
+    background-size:260% 100%; background-position:120% 0;
+  }
+  .opening.is-ready .scroll-sheen{ animation:sheenSweep var(--unroll) both; }
+  @keyframes sheenSweep{
+    0%{ opacity:.9; background-position:115% 0; }
+    70%{ opacity:.5; }
+    100%{ opacity:0; background-position:-15% 0; }
+  }
+  /* 画轴：深色木纹圆柱 + 描金端头 */
+  .rod{
+    position:absolute; top:-7px; bottom:-7px; width:var(--rod-w); z-index:2;
+    border-radius:calc(var(--rod-w) / 2);
+    background:linear-gradient(90deg,
+      #1f1408 0%, #4a3218 26%, #6d4c27 42%, #3a2612 68%, #170e05 100%);
+    box-shadow:0 6px 18px rgba(0,0,0,.45), inset 0 0 3px rgba(0,0,0,.65);
+  }
+  .rod::before, .rod::after{   /* 描金轴头 */
+    content:""; position:absolute; left:50%; transform:translateX(-50%);
+    width:calc(var(--rod-w) + 5px); height:calc(var(--rod-w) + 5px);
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #f0d9a0 0%, #c39851 55%, #6e4f22 100%);
+    box-shadow:0 2px 6px rgba(0,0,0,.5);
+  }
+  .rod::before{ top:-3px }
+  .rod::after{ bottom:-3px }
+  .rod-l{ left:calc(var(--rod-w) / -2); }
+  .rod-r{ right:calc(var(--rod-w) / -2); }
+  .opening.is-ready .rod-l{ animation:rodL var(--unroll) both; }
+  .opening.is-ready .rod-r{ animation:rodR var(--unroll) both; }
+  @keyframes rodL{ from{ left:calc(50% - var(--rod-w)); } }   /* 双轴并拢于中央 */
+  @keyframes rodR{ from{ right:calc(50% - var(--rod-w)); } }
+  /* 展开后渐显：品牌行 + 按钮 */
+  .opening-brand{
+    margin-top:clamp(22px, 4.5vh, 44px);
+    animation:brandIn .9s ease-out 1.45s both;
+  }
+  @keyframes brandIn{ from{ opacity:0; transform:translateY(14px); } }
+  .brand-line{
+    margin:0 0 20px; font-weight:300; color:rgba(247,236,207,.78);
+    font-size:13px; letter-spacing:.5em; text-indent:.5em;
+  }
+  .brand-line .lat{
+    font-family:"Cormorant Garamond",serif; font-style:italic;
+    letter-spacing:.32em; color:rgba(232,200,134,.85);
+  }
+  .opening button{
+    margin-top:0; background:transparent; color:#f7eccf;
+    border:1px solid rgba(247,236,207,.4); border-radius:99px;
+    padding:12px 36px; font-size:13px; letter-spacing:.4em; text-indent:.4em;
+    cursor:pointer; transition:background .3s, color .3s;
+  }
+  .opening button:hover{background:#f7eccf; color:#1f1812}
+  /* 退场：淡出同时整帘轻微上移 */
+  .opening.fade{opacity:0; pointer-events:none; transform:translateY(-14px)}
+
+  /* ============================================================
+     响应式：4 档尺寸断点 + 1 个触摸特性查询
+     基础样式已用 clamp/min/max 流式缩放，断点只做结构调整。
+     ============================================================ */
+
+  /* ---------- 档位 1：小屏手机竖屏（≤680px，覆盖 320–430 宽度） ---------- */
+  @media (max-width: 680px){
+    .topbar{
+      gap:8px;
+      padding-top:calc(12px + var(--safe-top));
+      /* 右上角静音按钮预留由 48px 收窄到 40px，给小屏让位 */
+      padding-right:calc(14px + 40px + var(--safe-right));
+      padding-left:calc(14px + var(--safe-left));
+    }
+    .brand img{width:34px; height:34px}
+    .brand .txt b{font-size:17px}
+    .brand .txt span{font-size:10px; letter-spacing:.2em}
+    /* 场景切换独占一行横滑；scroll-padding 保证首尾按钮不被胶囊内边距裁切 */
+    .scene-switch{order:3; width:100%; justify-content:flex-start; scroll-padding:6px}
+    .scene-switch button{padding:6px 12px; font-size:11px; letter-spacing:.15em}
+    .state-card{left:16px; right:12px; bottom:12px; max-width:min(72%, 340px)}
+    .state-card .en{font-size:clamp(26px, 9.5vw, 38px); line-height:1.05}
+    .state-card .zh{font-size:11px; letter-spacing:.35em}
+    .dialog{padding:20px 16px 14px; border-radius:16px}
+    .dialog .speaker{left:72px; font-size:11px}
+    .bubble{max-height:24vh}
+    .status-row .hint{white-space:normal}
+    .input-bar button{padding:9px 14px; letter-spacing:.1em}
+    /* 开屏画卷缩小：轴变细、品牌行与按钮适配 */
+    .opening{--rod-w:12px}
+    .scroll-painting{width:94vw}
+    .rod{top:-5px; bottom:-5px}
+    .opening-brand{margin-top:22px}
+    .brand-line{font-size:11px; letter-spacing:.32em; margin-bottom:14px}
+    /* 历史面板小屏全屏化 */
+    .history-panel{padding:0}
+    .history-panel .sheet{
+      width:100%; height:100dvh; max-height:none; border-radius:0;
+      padding:calc(20px + var(--safe-top)) 20px calc(24px + var(--safe-bottom));
+    }
+    .history-panel h3{font-size:22px}
+  }
+
+  /* ---------- 档位 2：低矮视口 / 手机横屏（高度 ≤560px） ---------- */
+  @media (max-height: 560px){
+    .topbar{
+      padding-top:calc(8px + var(--safe-top)); padding-bottom:6px; gap:6px;
+      padding-right:calc(clamp(14px,3vw,40px) + 44px + var(--safe-right));
+    }
+    .brand img{width:30px; height:30px}
+    .brand .txt b{font-size:15px}
+    .brand .txt span{display:none}   /* 状态场景名让位给垂直空间 */
+    .state-card{bottom:10px}
+    .state-card .en{font-size:clamp(20px, 6vh, 28px)}
+    .state-card .zh{display:none}
+    .state-card .badge{margin-top:8px; padding:4px 10px; font-size:10px}
+    .dialog{padding:16px 18px 12px}
+    .dialog::before{width:36px; height:36px; top:-18px}
+    .dialog .speaker{left:66px; top:-13px; font-size:11px}
+    .dialog .meta{margin-bottom:4px}
+    .bubble{min-height:48px; max-height:26vh}
+    .status-row{margin-top:6px}
+    .input-bar{margin-top:8px; padding:6px 10px}
+    .dialog-dock{padding-bottom:calc(10px + var(--safe-bottom))}
+    /* 开屏画卷随高度缩放：保证品牌行与按钮完整可见（2.334 ≈ 1916/821） */
+    .opening{--rod-w:12px}
+    .scroll-painting{width:min(92vw, calc((100dvh - 170px) * 2.334))}
+    .rod{top:-5px; bottom:-5px}
+    .opening-brand{margin-top:14px}
+    .brand-line{margin-bottom:10px}
+    .opening button{padding:9px 26px}
+  }
+
+  /* ---------- 档位 3：平板及以上（≥768px）：对话框限宽居中 + 状态卡左对齐轴线 ---------- */
+  @media (min-width: 768px){
+    .state-card{
+      /* 与居中后的对话框左缘对齐；对话框未触顶 max-width 时回退到流式边距 */
+      left:max(clamp(20px,4vw,60px), calc((100% - var(--dock-max)) / 2 + 2px));
+    }
+    .history-panel .sheet{width:min(720px, 88vw)}   /* 大屏限宽 */
+  }
+
+  /* ---------- 档位 4：桌面大屏 / 超宽屏（≥1600px）：内容不无限拉宽 ---------- */
+  @media (min-width: 1600px){
+    :root{--dock-max:880px}
+    .state-card{max-width:min(48%, 640px)}
+    .state-card .en{font-size:clamp(48px, 4.6vw, 88px)}
+    .state-card .zh{font-size:14px}
+    .bubble{font-size:17px}
+    .topbar{
+      padding-left:calc(48px + var(--safe-left));
+      padding-right:calc(48px + 56px + var(--safe-right));
+    }
+  }
+
+  /* ---------- 触摸设备：所有可点目标 ≥44px ---------- */
+  @media (pointer: coarse){
+    .scene-switch button,
+    .status-actions button,
+    .input-bar button,
+    .opening button,
+    .history-panel .close{
+      min-height:44px;
+      display:inline-flex; align-items:center; justify-content:center;
+    }
+    .scene-switch button{min-width:44px}
+  }
+
+  /* ---------- 减少动态偏好：跳过展开动画，直接呈现展开态（各元素基础样式即终态） ---------- */
+  @media (prefers-reduced-motion: reduce){
+    .scene, .rain span, .dust span,
+    .scroll-painting, .scroll-canvas, .scroll-sheen, .rod, .opening-brand{animation:none !important}
+    .scene{transform:none}
+    .bubble .caret{animation:none}
+    #retryBtn{animation:none}
+    *{transition-duration:.01ms !important}
+  }
+</style>
+</head>
+<body data-scene="normal">
+
+  <!-- 场景层（装饰性，对读屏隐藏） -->
+  <div class="scenes" aria-hidden="true">
+    <div class="scene" data-name="normal"   style="background-image:url('/scenes/normal.png')"></div>
+    <div class="scene" data-name="thinking" style="background-image:url('/scenes/thinking.png')"></div>
+    <div class="scene" data-name="rainy"    style="background-image:url('/scenes/rainy.png')"></div>
+    <div class="scene" data-name="cafe"     style="background-image:url('/scenes/cafe.png')"></div>
+  </div>
+  <div class="scene-overlay" aria-hidden="true"></div>
+  <div class="rain" id="rain" aria-hidden="true"></div>
+  <div class="dust" id="dust" aria-hidden="true"></div>
+
+  <!-- 开屏帘：画卷展开 -->
+  <div class="opening" id="opening">
+    <div class="scroll-painting">
+      <div class="scroll-canvas">
+        <img class="scroll-art" src="/banner.png"
+             alt="上海雪花膏 · 东方之美，时光之韵 —— 民国画报风画卷" />
+        <div class="scroll-sheen" aria-hidden="true"></div>
+      </div>
+      <div class="rod rod-l" aria-hidden="true"></div>
+      <div class="rod rod-r" aria-hidden="true"></div>
+    </div>
+    <div class="opening-brand">
+      <p class="brand-line">雪 花 膏 <span class="lat">· Xue Hua Gao</span></p>
+      <button id="startBtn" type="button" aria-label="展卷，进入与雪花膏的对话">展 卷</button>
+    </div>
+  </div>
+
+  <div class="stage">
+    <h1 class="visually-hidden">雪花膏 · AI 陪伴对话</h1>
+
+    <!-- 顶栏：品牌（名称 + 当前场景）与场景切换 -->
+    <header class="topbar">
+      <div class="brand">
+        <img src="/xuehuagao.png?v=3" alt="雪花膏" />
+        <div class="txt">
+          <b>雪花膏</b><span id="brandStatus">在线 · 日常</span>
+        </div>
+      </div>
+      <nav class="scene-switch" id="sceneSwitch" aria-label="场景切换">
+        <button type="button" data-scene="normal"   class="active" aria-pressed="true">日 常</button>
+        <button type="button" data-scene="cafe"     aria-pressed="false">咖 啡 馆</button>
+        <button type="button" data-scene="rainy"    aria-pressed="false">雨 天</button>
+        <button type="button" data-scene="thinking" aria-pressed="false">深 夜</button>
+      </nav>
+    </header>
+
+    <!-- 中部：状态卡 -->
+    <main class="middle">
+      <div class="state-card">
+        <div class="en" id="stateEn">Afternoon, Shanghai.</div>
+        <div class="zh" id="stateZh">徐 汇 · 多 云</div>
+        <div class="badge"><i aria-hidden="true"></i><span id="stateBadge">平静在线</span></div>
+      </div>
+    </main>
+
+    <!-- 底部对话框 -->
+    <footer class="dialog-dock">
+      <div class="dialog">
+        <div class="speaker">雪花膏</div>
+        <div class="meta">
+          <span class="msg-time" id="msgTime" title="最近回复时间"></span>
+          <span>Dialogue ／ 对话</span>
+        </div>
+        <div class="bubble" id="bubble" role="log" aria-live="off" aria-label="当前对话" tabindex="0"></div>
+        <div class="status-row">
+          <span class="hint" id="hint">轻声说点什么，她在听。</span>
+          <span class="status-actions">
+            <button id="retryBtn" type="button" hidden>重 试</button>
+            <button id="historyBtn" type="button">查看历史</button>
+          </span>
+        </div>
+        <form class="input-bar" id="composerForm">
+          <label class="visually-hidden" for="composer">输入想对雪花膏说的话</label>
+          <textarea id="composer" rows="1" maxlength="500"
+            placeholder="对雪花膏说点什么…（Enter 发送，Shift+Enter 换行）"></textarea>
+          <button id="sendBtn" type="submit" disabled>发 送</button>
+        </form>
+      </div>
+    </footer>
+  </div>
+
+  <!-- 历史面板 -->
+  <div class="history-panel" id="historyPanel" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
+    <div class="sheet">
+      <button class="close" id="closeHistory" type="button">关闭</button>
+      <h3 id="historyTitle">与雪花膏的对话</h3>
+      <div id="historyList"></div>
+    </div>
+  </div>
+
+  <!-- 读屏播报区：完整回复在打字结束后一次性播报，避免逐字打断 -->
+  <div id="srLive" class="visually-hidden" role="status" aria-live="polite"></div>
+
+<script>
+  'use strict';
+  /* ============================================================
+   * 与 /audio-immersion.js 的公开契约（不要改动以下接口）：
+   *   - 全局函数 setScene(name, opts) / send() / typewrite(text, done)
+   *     必须挂在 window 上（本脚本以顶层 function 声明，自动满足）；
+   *     audio-immersion.js 会在加载后包装它们以注入音效。
+   *   - #startBtn：首次点击时解锁音频。
+   *   - document.body.dataset.scene：当前场景名，音频据此切换环境音。
+   * ============================================================ */
+
+  // ---------- 环境粒子（纯装饰） ----------
+  (function(){
+    const dust = document.getElementById('dust');
+    for(let i = 0; i < 22; i++){
+      const s = document.createElement('span');
+      s.style.left = Math.random() * 100 + 'vw';
+      s.style.animationDuration = (12 + Math.random() * 18) + 's';
+      s.style.animationDelay = (-Math.random() * 20) + 's';
+      s.style.opacity = (.3 + Math.random() * .6);
+      s.style.transform = `scale(${.5 + Math.random()})`;
+      dust.appendChild(s);
+    }
+    const rain = document.getElementById('rain');
+    for(let i = 0; i < 120; i++){
+      const s = document.createElement('span');
+      s.style.left = Math.random() * 100 + 'vw';
+      s.style.animationDuration = (.5 + Math.random() * .8) + 's';
+      s.style.animationDelay = (-Math.random() * 2) + 's';
+      s.style.height = (60 + Math.random() * 90) + 'px';
+      s.style.opacity = (.4 + Math.random() * .6);
+      rain.appendChild(s);
+    }
+  })();
+
+  // ---------- 场景元数据 ----------
+  const SCENE_META = {
+    normal:   { label:'日常',   en:'Afternoon, Shanghai.',   zh:'徐 汇 · 多 云',      badge:'平静在线' },
+    cafe:     { label:'咖啡馆', en:'At the cafe.',           zh:'梧 桐 · 一 杯 美 式', badge:'在咖啡店' },
+    rainy:    { label:'雨天',   en:'Rain on sycamores.',     zh:'永 嘉 路 · 雨',      badge:'雨天在听' },
+    thinking: { label:'深夜',   en:'Late night, deep focus.', zh:'深 夜 · 在 思 考',  badge:'思考中'   },
+  };
+
+  // 各场景的预置开场白 —— 本地即时展示，不触发 LLM 调用。
+  const SCENE_OPENINGS = {
+    normal:   '你来啦...坐窗边这个位子吧，今天上海的光刚好落在桌子上。\n我刚把手边的事告一段落，你随时说话，我都在。',
+    cafe:     '你来得正好。今天的豆子是水洗耶加，柑橘和茉莉很轻...我手冲到第二壶。\n要一杯吗？或者你已经有想喝的，告诉我。',
+    rainy:    '雨从中午就开始下了...我把窗户开了条缝，能听见水落在梧桐叶上。\n你那边呢？有没有被淋到？',
+    thinking: '还没睡？...我手边这杯茶早就凉了，一直没去换。\n你想说就说，不想说，我们就这么停一会儿也行。',
+  };
+
+  // ---------- 全局状态 ----------
+  const history   = [];  // [{role:'user'|'assistant', content:string, time:number}]
+  let sending     = false;
+  let lastFailed  = null;   // {msg, sceneAtSend} —— 供「重试」使用
+  let serverOk    = true;   // /api/health 软检查结果，仅影响顶栏状态文案
+
+  // ---------- DOM 引用 ----------
+  const sceneEls  = document.querySelectorAll('.scene');
+  const bubble    = document.getElementById('bubble');
+  const composer  = document.getElementById('composer');
+  const sendBtn   = document.getElementById('sendBtn');
+  const hintEl    = document.getElementById('hint');
+  const msgTimeEl = document.getElementById('msgTime');
+  const retryBtn  = document.getElementById('retryBtn');
+  const srLive    = document.getElementById('srLive');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  // ---------- 小工具 ----------
+  function escapeHTML(s){
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function fmtTime(ts){
+    const d = new Date(ts);
+    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+  // 顶栏品牌区：名称 + 在线状态 + 当前场景名
+  function updateBrand(){
+    const scene = SCENE_META[document.body.dataset.scene] || SCENE_META.normal;
+    document.getElementById('brandStatus').textContent =
+      (serverOk ? '在线' : '信号不佳') + ' · ' + scene.label;
+  }
+  function syncSendUI(){
+    sendBtn.disabled = sending || !composer.value.trim();
+  }
+
+  // ---------- 场景管理（全局：audio-immersion.js 会包装此函数做环境音交叉淡入） ----------
+  function setScene(name, opts){
+    if(!SCENE_META[name]) name = 'normal';
+    const prev = document.body.dataset.scene;
+    document.body.dataset.scene = name;
+    sceneEls.forEach(el => el.classList.toggle('active', el.dataset.name === name));
+    document.getElementById('stateEn').textContent    = SCENE_META[name].en;
+    document.getElementById('stateZh').textContent    = SCENE_META[name].zh;
+    document.getElementById('stateBadge').textContent = SCENE_META[name].badge;
+    updateBrand();
+    // 同步顶部切换按钮的选中态（含 aria-pressed）
+    document.querySelectorAll('#sceneSwitch button').forEach(b => {
+      const on = b.dataset.scene === name;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+    // 尚未开始真实对话时，手动切场景会即时重播该场景的预置开场白
+    if(opts && opts.replayOpening && history.length === 0 && prev !== name){
+      const line = SCENE_OPENINGS[name];
+      if(line){
+        bubble.dataset.full = line;
+        hintEl.textContent = '点对话框可跳过打字效果。';
+        srLive.textContent = '雪花膏：' + line;
+        typewrite(line);
+      }
+    }
+  }
+  setScene('normal');  // 初始化（不重播开场白，开屏帘负责首屏）
+
+  // 手动切换场景 —— 下一条消息里雪花膏就「身处」该场景
+  document.getElementById('sceneSwitch').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if(!b) return;
+    setScene(b.dataset.scene, { replayOpening: true });
+  });
+
+  // ---------- 打字机（全局：audio-immersion.js 包装它播放接收音） ----------
+  let typingTimer = null;
+  function typewrite(text, done){
+    cancelType();
+    // 减少动态偏好：直接整段呈现
+    if(reducedMotion.matches){
+      bubble.textContent = text;
+      done && done();
+      return;
+    }
+    bubble.innerHTML = '';
+    const caret = document.createElement('span');
+    caret.className = 'caret';
+    bubble.appendChild(caret);
+    let i = 0;
+    typingTimer = setInterval(() => {
+      if(i >= text.length){ cancelType(); done && done(); return; }
+      bubble.insertBefore(document.createTextNode(text[i++]), caret);
+      bubble.scrollTop = bubble.scrollHeight;
+    }, 38);
+  }
+  function cancelType(){
+    if(typingTimer){ clearInterval(typingTimer); typingTimer = null; }
+  }
+  // 点按（或键盘触发）对话框：跳过打字动画，直接显示全文
+  function skipTyping(){
+    if(typingTimer && bubble.dataset.full){
+      cancelType();
+      bubble.textContent = bubble.dataset.full;
+    }
+  }
+  bubble.addEventListener('click', skipTyping);
+  bubble.addEventListener('keydown', e => {
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); skipTyping(); }
+  });
+
+  // ---------- 打字中指示 / 失败提示 ----------
+  function showTyping(){
+    bubble.dataset.full = '';
+    bubble.innerHTML =
+      '<span class="typing-dots" role="status" aria-label="雪花膏正在输入">' +
+      '<i></i><i></i><i></i></span>';
+  }
+  function showFailure(){
+    bubble.innerHTML = '<span class="failed-note">（信号忽然断了… 点下方「重 试」，让她再听一次。）</span>';
+    hintEl.textContent = '没能收到她的回复…';
+    retryBtn.hidden = false;
+  }
+  function clearFailure(){
+    retryBtn.hidden = true;
+  }
+
+  // ---------- 发送流程 ----------
+  // 全局 send()：audio-immersion.js 包装它播放发送音。只读输入框，不接收参数。
+  async function send(){
+    const msg = composer.value.trim();
+    if(!msg || sending) return;         // 空输入防抖 + 发送中去重
+    composer.value = '';
+    autoresize();
+    clearFailure();
+    lastFailed = null;
+    history.push({ role:'user', content: msg, time: Date.now() });
+    await deliver(msg, document.body.dataset.scene || 'normal');
+  }
+
+  // 实际请求：msg 必须已是 history 的最后一条（重试时沿用，不重复入列）
+  async function deliver(msg, sceneAtSend){
+    sending = true;
+    syncSendUI();
+    hintEl.textContent = '…她在想。';
+    showTyping();
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);  // 30s 超时保护
+    try{
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: msg,
+          // 只传 {role, content}，不带本地时间戳字段
+          history: history.slice(0, -1).map(t => ({ role: t.role, content: t.content })),
+          scene: sceneAtSend,
+        }),
+        signal: controller.signal,
+      });
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const reply = (data && data.reply) ? String(data.reply) : '...抱歉，我这边好像断了一下。';
+      const scene = (data && data.scene) || sceneAtSend;
+
+      history.push({ role:'assistant', content: reply, time: Date.now() });
+      msgTimeEl.textContent = fmtTime(Date.now());
+      hintEl.textContent = '点对话框可跳过打字效果。';
+      srLive.textContent = '雪花膏：' + reply;
+      bubble.dataset.full = reply;
+      setScene(scene);
+      typewrite(reply);
+    } catch(err){
+      // 失败：保留 history 中的用户消息，提供重试
+      lastFailed = { msg, sceneAtSend };
+      showFailure();
+    } finally {
+      clearTimeout(timeout);
+      sending = false;
+      syncSendUI();
+      composer.focus();
+    }
+  }
+
+  // 重试：仅当最后一条 history 仍是那条失败的用户消息时才允许
+  retryBtn.addEventListener('click', () => {
+    if(!lastFailed || sending) return;
+    const last = history[history.length - 1];
+    if(!last || last.role !== 'user' || last.content !== lastFailed.msg) return;
+    clearFailure();
+    deliver(lastFailed.msg, lastFailed.sceneAtSend);
+  });
+
+  // ---------- 输入区：Enter 发送 / Shift+Enter 换行 / IME 合成中不发送 ----------
+  document.getElementById('composerForm').addEventListener('submit', e => {
+    e.preventDefault();
+    send();
+  });
+  composer.addEventListener('keydown', e => {
+    if(e.key === 'Enter' && !e.shiftKey){
+      e.preventDefault();
+      if(!e.isComposing && composer.value.trim() && !sending) send();
+    }
+  });
+  composer.addEventListener('input', () => {
+    autoresize();
+    syncSendUI();
+  });
+  function autoresize(){
+    composer.style.height = 'auto';
+    composer.style.height = Math.min(composer.scrollHeight, 120) + 'px';
+  }
+
+  // ---------- 历史面板（含时间戳、焦点管理、Esc 关闭） ----------
+  const panel = document.getElementById('historyPanel');
+  const list  = document.getElementById('historyList');
+  let lastFocus = null;
+
+  function openHistory(){
+    list.innerHTML = '';
+    if(history.length === 0){
+      const p = document.createElement('p');
+      p.className = 'empty';
+      p.textContent = '还没有对话…轻声说点什么，她会记得。';
+      list.appendChild(p);
+    } else {
+      history.forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'turn ' + (t.role === 'user' ? 'user' : 'assistant');
+        const who = t.role === 'user' ? '你' : '雪花膏';
+        div.innerHTML =
+          `<span class="who">${who}</span>` +
+          `<span class="when">${fmtTime(t.time)}</span>` +
+          escapeHTML(t.content);
+        list.appendChild(div);
+      });
+    }
+    lastFocus = document.activeElement;
+    panel.classList.add('open');
+    document.getElementById('closeHistory').focus();
+  }
+  function closeHistory(){
+    panel.classList.remove('open');
+    if(lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  document.getElementById('historyBtn').addEventListener('click', openHistory);
+  document.getElementById('closeHistory').addEventListener('click', closeHistory);
+  panel.addEventListener('click', e => { if(e.target === panel) closeHistory(); });
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape' && panel.classList.contains('open')) closeHistory();
+  });
+
+  // ---------- 开屏帘 ----------
+  const opening = document.getElementById('opening');
+  // 画卷图片就绪后再触发 .is-ready 展开动画，避免白缝；加载失败/超时兜底直接展开
+  (function(){
+    const art = opening.querySelector('.scroll-art');
+    const ready = () => opening.classList.add('is-ready');
+    if(art && art.complete && art.naturalWidth > 0){ ready(); return; }
+    if(art){
+      art.addEventListener('load', ready, { once:true });
+      art.addEventListener('error', ready, { once:true });
+    }
+    setTimeout(ready, 1600);
+  })();
+  document.getElementById('startBtn').addEventListener('click', () => {
+    opening.classList.add('fade');
+    setTimeout(() => opening.remove(), 1300);
+    setScene('normal');
+    const line = SCENE_OPENINGS.normal;
+    bubble.dataset.full = line;
+    hintEl.textContent = '点对话框可跳过打字效果。';
+    srLive.textContent = '雪花膏：' + line;
+    typewrite(line);
+    composer.focus();
+  });
+
+  // ---------- 软健康检查：只在失败时调整顶栏状态，绝不阻塞对话 ----------
+  fetch('/api/health')
+    .then(r => { serverOk = r.ok; updateBrand(); })
+    .catch(() => { serverOk = false; updateBrand(); });
+
+  // 初始按钮态
+  syncSendUI();
+</script>
+<script src="/audio-immersion.js"></script>
+</body>
+</html>
