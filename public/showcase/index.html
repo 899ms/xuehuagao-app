@@ -380,7 +380,7 @@ a{color:inherit;text-decoration:none}
 .scene-cell p{margin:0;color:rgba(var(--ink-rgb),.78);font-size:15px}
 .pipeline{
   display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(165px,1fr));
   gap:22px;
   max-width:1080px;
   margin:48px 0;
@@ -780,7 +780,7 @@ a{color:inherit;text-decoration:none}
   <div class="split">
     <div class="text-col">
       <p class="body fade-in">
-        体验预览时，这一段可以直接对着页面讲: 当我从日常切到深夜，改变的不只是背景图，还有标题、开场台词、雪花膏 的语速和回答方式。
+        从日常切到深夜，改变的不只是背景图，还有标题、开场台词、雪花膏 的语速和回答方式。
       </p>
       <div class="callout fade-in">
         “route(current_scene, user_emotion, user_intent, context) -> {target_scene, policy, temperature, pace, micro_actions, transition_phrase}”
@@ -898,47 +898,61 @@ mute -> sound control</pre>
 
 <section class="section" id="section-3b">
   <div class="chrome">
-    <div>3B · 构建过程 / Guided Build Flow</div>
+    <div>3B · 协作链路 / Collaboration Flow</div>
     <div>Act III · 07</div>
   </div>
-  <div class="kicker fade-in">3B · 构建过程</div>
-  <h3 class="fade-in">这个 Demo 是怎么从一句想法跑出来的？</h3>
-  <p class="h-sub fade-in">MuleRun 先问页面形态，再确认角色素材，最后进入服务端和场景 Prompt。</p>
+  <div class="kicker fade-in">3B · 协作链路</div>
+  <h3 class="fade-in">不是一个工具独立做完，而是一条分工明确的协作链路。</h3>
+  <p class="h-sub fade-in">从调研方法、体验设计到执行开发和最终优化，每个工具负责不同环节；角色方向、素材取舍与最后验收始终由我来决定。</p>
   <p class="body fade-in">
-    过程截图不是重点堆料，而是用来证明构建路径: 我不是一次性写完所有东西，而是在 MuleRun 里不断确认形态、素材和技术路线，最后得到可演示网页。
+    Kimi 先用于梳理“怎样获得更好调研结果”的方法论，再把这套方法用于人格相关问题，整合为角色底稿；Codex 基于这份底稿设计四个场景的 Prompt、对话策略和环境音效；MuleRun 负责把明确需求落成页面和服务端；K3 在完成阶段对体验做最后一轮优化。下面的过程截图对应的是 MuleRun 的执行开发环节，而不是整个项目的全部创作过程。
   </p>
+  <div class="callout fade-in">
+    Kimi 调研方法：<a href="https://mp.weixin.qq.com/s/wmqdOD8DoP7CTrG9FigjYw" target="_blank" rel="noopener noreferrer"><strong>查看调研方法文章</strong></a>
+    <span class="src">过程证据 · 如何获得更好调研结果，并用于人格相关研究</span>
+  </div>
   <div class="pipeline fade-in">
     <div class="step">
       <div class="nb">01</div>
-      <div class="title">页面形态</div>
-      <div class="desc">从立绘窗口、Galgame 视觉小说、iMessage 简洁聊天中选择更有沉浸感的路线。</div>
+      <div class="title">角色方向</div>
+      <div class="desc">我确定雪花膏的命名来源、人格方向、场景边界与验收标准。</div>
     </div>
     <div class="step">
       <div class="nb">02</div>
-      <div class="title">人物素材</div>
-      <div class="desc">直接使用已有 雪花膏 头像图，避免重新生成导致角色不一致。</div>
+      <div class="title">Kimi · 调研方法</div>
+      <div class="desc">先梳理如何获得更好调研结果的方法，再用于人格相关研究并整合成角色底稿。</div>
     </div>
     <div class="step">
       <div class="nb">03</div>
-      <div class="title">服务端方案</div>
-      <div class="desc">确认使用自动合成方案和 `server.js` 后端，进入人格和场景编排。</div>
+      <div class="title">Codex · 体验设计</div>
+      <div class="desc">把角色底稿转为场景 Prompt、对话策略与环境音效方案。</div>
+    </div>
+    <div class="step">
+      <div class="nb">04</div>
+      <div class="title">MuleRun · 执行开发</div>
+      <div class="desc">将被确认的需求执行为可运行的页面、服务端与场景功能。</div>
+    </div>
+    <div class="step">
+      <div class="nb">05</div>
+      <div class="title">K3 · 最终优化</div>
+      <div class="desc">对完成的 Demo 做最后一轮体验优化，收束为当前版本。</div>
     </div>
   </div>
   <div class="proof-grid fade-in">
     <div class="proof-cell">
-      <figure class="frame-img r-16x9 contain"><img src="mulerun_process_assets/mulerun_05.png" alt="MuleRun 页面形态选择截图"></figure>
-      <div class="cap"><span>Step 1</span><span>页面形态</span></div>
+      <figure class="frame-img r-16x9 contain"><img src="mulerun_process_assets/mulerun_05.png" alt="MuleRun 执行开发时的页面形态选择截图"></figure>
+      <div class="cap"><span>MuleRun · Execution</span><span>页面形态</span></div>
     </div>
     <div class="proof-cell">
-      <figure class="frame-img r-16x9 contain"><img src="mulerun_process_assets/mulerun_06.png" alt="MuleRun 人物素材选择截图"></figure>
-      <div class="cap"><span>Step 2</span><span>人物素材</span></div>
+      <figure class="frame-img r-16x9 contain"><img src="mulerun_process_assets/mulerun_06.png" alt="MuleRun 执行开发时的人物素材确认截图"></figure>
+      <div class="cap"><span>MuleRun · Execution</span><span>人物素材</span></div>
     </div>
     <div class="proof-cell">
-      <figure class="frame-img r-16x9 contain"><img src="mulerun_process_assets/mulerun_10.png" alt="MuleRun 服务端方案确认截图"></figure>
-      <div class="cap"><span>Step 3</span><span>服务端方案</span></div>
+      <figure class="frame-img r-16x9 contain"><img src="mulerun_process_assets/mulerun_10.png" alt="MuleRun 执行开发时的服务端方案确认截图"></figure>
+      <div class="cap"><span>MuleRun · Execution</span><span>服务端方案</span></div>
     </div>
   </div>
-  <div class="anchor-quote fade-in">Guided Build Flow - 把想法拆成可确认的工程节点。</div>
+  <div class="anchor-quote fade-in">Research → Design → Build → Refine - 多工具分工，最终由人来判断。</div>
 </section>
 
 <section class="outro" id="act-4">
@@ -956,8 +970,8 @@ mute -> sound control</pre>
   </p>
   <div class="stamp fade-in">
     <span>Demo / 雪花膏 AI Assistant Game</span>
-    <span>工具 / MuleRun</span>
-    <span>场景 / 项目展示</span>
+    <span>协作 / Kimi · Codex · MuleRun · K3</span>
+    <span>主导 / 方向取舍 · 最终验收</span>
     <span>下一步 / OCR 识图对话</span>
   </div>
   <div class="tags fade-in">
@@ -970,7 +984,7 @@ mute -> sound control</pre>
 
 <footer class="site-footer">
   <div>雪花膏 项目展示页</div>
-  <div>Built from local MuleRun output, scene prompts, audio assets and screenshots</div>
+  <div>Built through Kimi research, Codex design, MuleRun execution and K3 refinement</div>
 </footer>
 
 <script>

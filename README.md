@@ -12,6 +12,12 @@
 
 普通聊天通常只有一块输入框。雪花膏把一次对话拆成三层：视觉上是可切换的场景与角色，语言上是与场景匹配的回复策略，听觉上是环境声和轻量交互反馈。三层一起工作，才让“她在这里”这件事成立。
 
+### 协作方式
+
+雪花膏不是由某一个工具独立生成的作品。角色的来源、人格方向、素材取舍与每轮验收由我决定；Kimi 先用于梳理如何获得更好调研结果的方法，再将人格相关调研整合为角色底稿；Codex 用于场景 Prompt 与音效方案设计，MuleRun 负责把明确需求执行为页面和服务端，K3 在最后一轮对体验进行优化。
+
+过程证据：[Kimi 调研方法（微信文章）](https://mp.weixin.qq.com/s/wmqdOD8DoP7CTrG9FigjYw)。
+
 <p align="center">
   <img src="public/showcase/mulerun_process_assets/mulerun_15.png" alt="雪花膏日常场景对话界面" width="720">
 </p>
