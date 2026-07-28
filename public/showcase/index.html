@@ -96,7 +96,7 @@ a{color:inherit;text-decoration:none}
   content:"";
   position:absolute;
   inset:0;
-  background:url("assets/xuehuagao-hero-cafe-bg.png") center center / cover no-repeat;
+  background:url("assets/xuehuagao-hero-cafe-bg.jpg?v=2") center center / cover no-repeat;
   opacity:.7;
 }
 .hero::after{
@@ -307,6 +307,11 @@ a{color:inherit;text-decoration:none}
 .frame-img.contain img{
   object-fit:contain;
   background:var(--paper-tint);
+}
+.frame-img.mobile-shot img{
+  max-height:520px;
+  object-fit:cover;
+  object-position:top;
 }
 .figcap{margin-top:10px;color:var(--muted)}
 .stats-grid{
@@ -574,6 +579,7 @@ a{color:inherit;text-decoration:none}
   .scene-cell{min-height:auto}
   .outro blockquote{font-size:42px}
 }
+
 </style>
 </head>
 <body>
@@ -676,9 +682,9 @@ a{color:inherit;text-decoration:none}
     </div>
     <div class="img-col fade-in">
       <figure class="frame-img r-16x9">
-        <img src="mulerun_process_assets/mulerun_15.png" alt="雪花膏 日常场景成品页截图">
+        <img src="assets/shots/01_opening_scroll.jpg" alt="雪花膏 开屏画卷展开首屏实拍" loading="lazy" decoding="async">
       </figure>
-      <div class="figcap">Fig. 01 · 项目开场优先展示最终可玩画面。</div>
+      <div class="figcap">Fig. 01 · 开屏「画卷展开」首屏实拍：上海雪花膏横幅与双画轴，点击展卷进入。</div>
     </div>
   </div>
 </section>
@@ -736,7 +742,7 @@ a{color:inherit;text-decoration:none}
     </div>
     <div class="img-col fade-in">
       <figure class="frame-img r-16x9 contain">
-        <img src="mulerun_process_assets/mulerun_10.png" alt="MuleRun 服务端方案确认截图">
+        <img src="mulerun_process_assets/mulerun_10.jpg" alt="MuleRun 服务端方案确认截图">
       </figure>
       <div class="figcap">Fig. 03 · 人格和服务端方案被拆成可继续执行的工程节点。</div>
     </div>
@@ -789,7 +795,7 @@ a{color:inherit;text-decoration:none}
     </div>
     <div class="img-col fade-in">
       <figure class="frame-img r-16x9 contain">
-        <img src="mulerun_process_assets/mulerun_09.png" alt="MuleRun 雨天场景 Prompt 思维导图截图">
+        <img src="mulerun_process_assets/mulerun_09.jpg" alt="MuleRun 雨天场景 Prompt 思维导图截图">
       </figure>
       <div class="figcap">Fig. 04 · Rainy 场景被拆成行为指令、语气参数、语言风格和微行为。</div>
     </div>
@@ -870,26 +876,53 @@ mute -> sound control</pre>
   </div>
   <div class="kicker fade-in">3A · 体验画面</div>
   <h3 class="fade-in">先让人看清楚这个 Demo。</h3>
-  <p class="h-sub fade-in">大图展示日常场景，再补深夜场景和输入状态；不要把三张截图挤成看不清的小卡片。</p>
+  <p class="h-sub fade-in">先看大图，再看场景切换与移动端；每张实拍截图都给足展示空间，不挤成看不清的小卡片。</p>
   <p class="body fade-in">
     这一段让人一眼看清楚: 顶部有四个场景按钮，右上角有静音按钮，底部有对话框，雪花膏 的人物形象和场景背景已经组合在一起。
   </p>
   <div class="demo-showcase fade-in">
     <figure class="frame-img">
-      <img src="mulerun_process_assets/mulerun_15.png" alt="雪花膏 日常场景成品界面大图截图">
+      <img src="assets/shots/02_scene_normal.jpg" alt="雪花膏 日常场景主界面实拍大图" loading="lazy" decoding="async">
     </figure>
     <div class="cap"><span>Main Demo</span><span>日常场景全画面</span></div>
   </div>
   <div class="demo-row fade-in">
     <div class="proof-cell">
-      <figure class="frame-img r-16x9"><img src="mulerun_process_assets/mulerun_16.png" alt="雪花膏 深夜思考场景成品界面截图"></figure>
+      <figure class="frame-img r-16x9"><img src="assets/shots/05_scene_thinking.jpg" alt="雪花膏 深夜思考场景实拍截图" loading="lazy" decoding="async"></figure>
       <div class="cap"><span>Thinking</span><span>深夜场景</span></div>
     </div>
     <div class="proof-cell">
-      <figure class="frame-img r-16x9"><img src="mulerun_process_assets/mulerun_17.png" alt="雪花膏 深夜思考场景对话输入截图"></figure>
-      <div class="cap"><span>Input</span><span>对话状态</span></div>
+      <figure class="frame-img r-16x9"><img src="assets/shots/06_input_state.jpg" alt="雪花膏 用户正在输入消息的状态实拍截图" loading="lazy" decoding="async"></figure>
+      <div class="cap"><span>Input</span><span>对话状态 · 用户输入中</span></div>
     </div>
   </div>
+  <div class="demo-showcase fade-in">
+    <figure class="frame-img">
+      <img src="assets/shots/07_chat_reply.jpg" alt="雪花膏 真实对话实拍：人格引擎的场景化拆解回复" loading="lazy" decoding="async">
+    </figure>
+    <div class="cap"><span>Real Chat</span><span>真实对话实拍 · 人格引擎的场景化回复</span></div>
+  </div>
+  <div class="demo-row fade-in">
+    <div class="proof-cell">
+      <figure class="frame-img r-16x9"><img src="assets/shots/03_scene_cafe.jpg" alt="雪花膏 咖啡馆场景切换实拍截图" loading="lazy" decoding="async"></figure>
+      <div class="cap"><span>Scene Switch</span><span>场景切换实拍 · 咖啡馆</span></div>
+    </div>
+    <div class="proof-cell">
+      <figure class="frame-img r-16x9"><img src="assets/shots/04_scene_rainy.jpg" alt="雪花膏 雨天场景切换实拍截图" loading="lazy" decoding="async"></figure>
+      <div class="cap"><span>Scene Switch</span><span>场景切换实拍 · 雨天</span></div>
+    </div>
+  </div>
+  <div class="demo-row fade-in">
+    <div class="proof-cell">
+      <figure class="frame-img mobile-shot"><img src="assets/shots/08_mobile_opening.jpg" alt="雪花膏 移动端开屏画卷展开实拍截图" loading="lazy" decoding="async"></figure>
+      <div class="cap"><span>Mobile</span><span>移动端实拍 · 开屏</span></div>
+    </div>
+    <div class="proof-cell">
+      <figure class="frame-img mobile-shot"><img src="assets/shots/09_mobile_main.jpg" alt="雪花膏 移动端主界面实拍截图" loading="lazy" decoding="async"></figure>
+      <div class="cap"><span>Mobile</span><span>移动端实拍 · 主界面</span></div>
+    </div>
+  </div>
+  <div class="figcap">移动端实拍 · 全尺寸自适应，竖屏画面从顶部完整呈现。</div>
   <div class="talk-note fade-in">
     页面想说: “先看这个页面，不用先听我解释。你能看到她在哪里、现在是什么场景、她准备用什么状态跟你说话。”
   </div>
@@ -940,15 +973,15 @@ mute -> sound control</pre>
   </div>
   <div class="proof-grid fade-in">
     <div class="proof-cell">
-      <figure class="frame-img r-16x9 contain"><img src="mulerun_process_assets/mulerun_05.png" alt="MuleRun 执行开发时的页面形态选择截图"></figure>
+      <figure class="frame-img r-16x9 contain"><img src="mulerun_process_assets/mulerun_05.jpg" alt="MuleRun 执行开发时的页面形态选择截图"></figure>
       <div class="cap"><span>MuleRun · Execution</span><span>页面形态</span></div>
     </div>
     <div class="proof-cell">
-      <figure class="frame-img r-16x9 contain"><img src="mulerun_process_assets/mulerun_06.png" alt="MuleRun 执行开发时的人物素材确认截图"></figure>
+      <figure class="frame-img r-16x9 contain"><img src="mulerun_process_assets/mulerun_06.jpg" alt="MuleRun 执行开发时的人物素材确认截图"></figure>
       <div class="cap"><span>MuleRun · Execution</span><span>人物素材</span></div>
     </div>
     <div class="proof-cell">
-      <figure class="frame-img r-16x9 contain"><img src="mulerun_process_assets/mulerun_10.png" alt="MuleRun 执行开发时的服务端方案确认截图"></figure>
+      <figure class="frame-img r-16x9 contain"><img src="mulerun_process_assets/mulerun_10.jpg" alt="MuleRun 执行开发时的服务端方案确认截图"></figure>
       <div class="cap"><span>MuleRun · Execution</span><span>服务端方案</span></div>
     </div>
   </div>
@@ -1008,5 +1041,7 @@ const navObserver = new IntersectionObserver((entries)=>{
 },{rootMargin:"-45% 0px -45% 0px",threshold:0});
 sections.forEach((section)=>navObserver.observe(section));
 </script>
+
+<script defer src="assets/at.js"></script>
 </body>
 </html>

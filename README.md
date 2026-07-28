@@ -19,7 +19,7 @@
 过程证据：[Kimi 调研方法（微信文章）](https://mp.weixin.qq.com/s/wmqdOD8DoP7CTrG9FigjYw)。
 
 <p align="center">
-  <img src="public/showcase/mulerun_process_assets/mulerun_15.png" alt="雪花膏日常场景对话界面" width="720">
+  <img src="public/showcase/assets/shots/02_scene_normal.jpg" alt="雪花膏日常场景对话界面" width="720">
 </p>
 <p align="center"><sub>日常场景：角色、环境、状态文案与对话框共同构成完整的聊天空间。</sub></p>
 
@@ -34,8 +34,8 @@
 
 <table>
   <tr>
-    <td width="50%"><img src="public/showcase/mulerun_process_assets/mulerun_16.png" alt="雪花膏深夜思考场景"></td>
-    <td width="50%"><img src="public/showcase/mulerun_process_assets/mulerun_17.png" alt="雪花膏深夜场景的输入状态"></td>
+    <td width="50%"><img src="public/showcase/assets/shots/05_scene_thinking.jpg" alt="雪花膏深夜思考场景"></td>
+    <td width="50%"><img src="public/showcase/assets/shots/06_input_state.jpg" alt="雪花膏深夜场景的输入状态"></td>
   </tr>
   <tr>
     <td align="center"><sub>深夜：把问题慢慢拆开。</sub></td>
@@ -61,7 +61,7 @@
 | 展示页备用地址（Cloudflare Pages） | https://xuehuagao-showcase.pages.dev |
 | 雪花膏插画 Skill 仓库 | https://github.com/xiangzi-cyber/xuehuagao-illustrations |
 
-展示站源码在 `showcase/` 目录，部署：`npx wrangler pages deploy showcase --project-name=xuehuagao-showcase`
+展示站源码在 `public/showcase/` 目录（应用内访问 `/showcase/`），部署展示站：`npx wrangler pages deploy public/showcase --project-name=xuehuagao-showcase`
 
 ## 项目结构
 
