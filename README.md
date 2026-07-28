@@ -53,6 +53,16 @@
 
 仓库内的 [`public/showcase/index.html`](public/showcase/index.html) 是完整项目展示页。启动应用后访问 `/showcase/`，可以按“为什么做 → 怎么实现 → 体验预览”的顺序浏览这个项目。
 
+## 🌐 线上地址
+
+| 内容 | 链接 |
+|---|---|
+| **项目展示页**（自有域名） | **https://xuehuagao.xiangzi.info** |
+| 展示页备用地址（Cloudflare Pages） | https://xuehuagao-showcase.pages.dev |
+| 雪花膏插画 Skill 仓库 | https://github.com/xiangzi-cyber/xuehuagao-illustrations |
+
+展示站源码在 `showcase/` 目录，部署：`npx wrangler pages deploy showcase --project-name=xuehuagao-showcase`
+
 ## 项目结构
 
 ```
