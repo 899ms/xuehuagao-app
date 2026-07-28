@@ -109,6 +109,8 @@
 |---|---|
 | **项目展示页**（自有域名） | **https://xuehuagao.xiangzi.info** |
 | 展示页备用地址（Cloudflare Pages） | https://xuehuagao-showcase.pages.dev |
+| **应用界面**（自有域名，画卷开屏 + 四场景） | **https://app.xiangzi.info** |
+| 应用备用地址（Cloudflare Pages） | https://xuehuagao-app.pages.dev |
 | 雪花膏插画 Skill 仓库 | https://github.com/xiangzi-cyber/xuehuagao-illustrations |
 
 展示站源码在 `public/showcase/` 目录（应用内访问 `/showcase/`），部署展示站：`npx wrangler pages deploy public/showcase --project-name=xuehuagao-showcase`
