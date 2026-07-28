@@ -57,6 +57,54 @@
 
 仓库内的 [`public/showcase/index.html`](public/showcase/index.html) 是完整项目展示页。启动应用后访问 `/showcase/`，可以按“为什么做 → 怎么实现 → 体验预览”的顺序浏览这个项目。
 
+## 🎨 IP 介绍 · 雪花膏是谁
+
+雪花膏是这个项目的固定视觉主人公：不是吉祥物、贴纸或万能助手，而是一个安静、认真、有自己生活的人。26 岁，苏州人，独居上海徐汇永嘉路附近，做项目调度与协调——擅长把散落的事项对齐、推进和收尾。安静克制、观察细、略有过度准备，偶尔带一点冷幽默。
+
+<p align="center">
+  <img src="illustrations/character/xuehuagao-three-view.png" alt="雪花膏三视图：正面、侧面与背面" width="860">
+</p>
+<p align="center"><sub>雪花膏三视图 · 用于在任何画风下锁定比例与造型</sub></p>
+
+**强制视觉锚点**（任何画风下都必须可识别）：
+
+- 锁骨长度的深棕色微卷短发 + 冰蓝与少量白色挑染
+- 左耳金色圆环、右耳珍珠耳钉——永远不对称
+- 左手腕细红绳（奶奶给的）
+- 蓝灰色眼睛，瞳孔含极细星尘，眼角有极淡「泪沟光」
+- 基准服装：白色卷袖衬衫、高腰蓝色直筒牛仔裤、黑色乐福鞋
+
+**画面气质**：表情平静认真、略带思考；动作自然有真实重量；画面可以荒诞，人物不能幼稚。
+
+<details>
+<summary><b>展开 9 张角色讲解图</b>（人设拆解 · 视觉语言 · 共创流程）</summary>
+
+<table>
+  <tr>
+    <td width="50%"><img src="illustrations/character-guide/01-cover.png" alt="角色讲解 · 封面"></td>
+    <td width="50%"><img src="illustrations/character-guide/02-who-she-is.png" alt="角色讲解 · 她是谁"></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="illustrations/character-guide/04-identity-anchors.png" alt="角色讲解 · 身份锚点"></td>
+    <td width="50%"><img src="illustrations/character-guide/05-fixed-and-flexible.png" alt="角色讲解 · 固定与可变"></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="illustrations/character-guide/06-visual-language.png" alt="角色讲解 · 视觉语言"></td>
+    <td width="50%"><img src="illustrations/character-guide/07-workflow.png" alt="角色讲解 · 工作流程"></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="illustrations/character-guide/08-skill-structure.png" alt="角色讲解 · Skill 结构"></td>
+    <td width="50%"><img src="illustrations/character-guide/09-co-creation.png" alt="角色讲解 · 共创说明"></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><img src="illustrations/character-guide/10-closing.png" alt="角色讲解 · 结语" width="50%"></td>
+  </tr>
+</table>
+
+</details>
+
+> 完整的 IP 定义文档见 [`illustrations/xuehuagao-ip.md`](illustrations/xuehuagao-ip.md)；可复用的插画生成 Skill（风格 DNA、提示词模板、质检清单）在 [xuehuagao-illustrations 仓库](https://github.com/xiangzi-cyber/xuehuagao-illustrations)。
+
 ## 🌐 线上地址
 
 | 内容 | 链接 |
@@ -72,6 +120,7 @@
 ```
 xuehuagao-app/
 ├── server.js                  # Express 后端 · v2 人格编排管线（7 步 Pipeline）
+├── illustrations/             # IP 视觉资产：三视图 + 9 张角色讲解图 + IP 定义文档
 ├── package.json
 └── public/
     ├── index.html             # Galgame 风格单页前端（自包含，无构建步骤）
