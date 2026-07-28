@@ -189,3 +189,7 @@ PORT=80 LLM_API_KEY=sk-... nohup npm start &
 **mulerun（原部署方式）**：按 mulerun 文档上传本目录即可，入口 `server.js`。
 
 > 注意：`xuehuagao.png` 与 `scenes/*.png` 单张约 2MB，如部署到按流量计费平台可自行压缩。
+
+## 开源许可
+
+本仓库全部内容——包括代码、人格文档、角色立绘、场景图与插画——均以 [MIT License](LICENSE) 开源。欢迎学习、复用与二次创作，署名即可。
