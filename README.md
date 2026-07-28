@@ -103,6 +103,18 @@
 
 > 完整的 IP 定义文档见 [`illustrations/xuehuagao-ip.md`](illustrations/xuehuagao-ip.md)；可复用的插画生成 Skill（风格 DNA、提示词模板、质检清单）在 [xuehuagao-illustrations 仓库](https://github.com/xiangzi-cyber/xuehuagao-illustrations)。
 
+### 原创 IP 与共创 · 欢迎把新的故事带回来
+
+<p align="center">
+  <img src="illustrations/character-guide/09-co-creation.png" alt="原创 IP 与共创：名字保留、形象保留、故事共创" width="720">
+</p>
+
+“雪花膏”是小金鱼箱子从 0 到 1 创作并持续完善的原创角色 IP。
+
+欢迎基于她进行二创、同人创作和各种形式的共创；对于这些创作与使用，创作者不会主动追究 IP 侵权责任。唯一希望共同保留的是：角色继续使用“雪花膏”这个名字，并尽量维持核心形象与辨识度，不进行过大幅度的改变。
+
+代码与 Skill 文档沿用仓库中的 MIT License。雪花膏角色形象与新生成资产的共创边界以上述说明为准。
+
 ## 🌐 线上地址
 
 | 内容 | 链接 |
@@ -193,3 +205,21 @@ PORT=80 LLM_API_KEY=sk-... nohup npm start &
 ## 开源许可
 
 本仓库全部内容——包括代码、人格文档、角色立绘、场景图与插画——均以 [MIT License](LICENSE) 开源。欢迎学习、复用与二次创作，署名即可。
+
+---
+
+## 关于创作者
+
+**罗旭清（小金鱼箱子）** — AI 教程作者 / 产品测评人 / AI 产品设计师
+
+> 人生是藏宝图，而我是探索者。
+
+目前正在尝试转型到设计工程师方向，有相关工作机会，欢迎联系我。
+
+- GitHub：[@xiangzi-cyber](https://github.com/xiangzi-cyber)
+- X / Twitter：[@zi_xiang5806](https://x.com/zi_xiang5806)
+- 网站：[www.xiangzi.info](https://www.xiangzi.info/)
+- 公众号：小金鱼箱子（安利产品、无投流教程，被 8 个产品方官方认领）
+- 小红书：红帽箱子（小红书号：5025023313）
+- 微信：`LUQ361874611`（加我时请明确标注来意）
+- 邮箱：xuqingluo795@gmail.com
