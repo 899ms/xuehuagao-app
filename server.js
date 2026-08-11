@@ -71,7 +71,7 @@ const CONFIG = {
   MAX_HISTORY: 10,
   MIN_SCENE_STAY: 3,
   MIN_SWITCH_INTERVAL: 2,
-  MAX_RETRY: 3,
+  MAX_RETRY: 1,
   SAFE_DEFAULT: '我在听，请继续说。',
   SAFE_DEFAULT_EMOTIONAL: '嗯，我在这里。慢慢说。',
 };
@@ -628,11 +628,14 @@ function retrieve(module_id, query, context) {
     }
     case 'knowledge': {
       if (!q) return [];
-      return KB.knowledge.filter(k =>
-        k.scope.toLowerCase().includes(q) ||
-        k.invocation_scenes.some(s => q.includes(s)) ||
-        k.typical_expressions.some(e => q.includes(e.slice(0, 4)))
-      );
+      return KB.knowledge.filter(k => {
+        // Match direction: the user query must contain the scope's core segment
+        // (text before any parenthesis), not the other way around.
+        const scopeCore = k.scope.split(/[（(]/)[0].trim().toLowerCase();
+        return (scopeCore && q.includes(scopeCore)) ||
+          k.invocation_scenes.some(s => q.includes(s)) ||
+          k.typical_expressions.some(e => q.includes(e.slice(0, 4)));
+      });
     }
     case 'identity': {
       return KB.identity.slice();
@@ -649,7 +652,7 @@ function detect_emotion(text) {
   const patterns = [
     { primary: 'sad',          re: /(难过|伤心|想哭|哭了|不开心|失落|emo|心情不好|崩溃|压抑|沮丧|失望)/,                valence: 'negative', intensity: 0.7 },
     { primary: 'angry',        re: /(生气|气死|愤怒|火大|讨厌|滚|烦死|想骂|气炸)/,                                    valence: 'negative', intensity: 0.8 },
-    { primary: 'anxious',      re: /(焦虑|紧张|害怕|担心|睡不着|焦灼|压力|赶不完|来不及|忙|乱|deadline|ddl)/i,        valence: 'negative', intensity: 0.7 },
+    { primary: 'anxious',      re: /(焦虑|紧张|害怕|担心|睡不着|焦灼|压力|赶不完|来不及|太忙|忙死|忙到|乱套|deadline|ddl)/i,  valence: 'negative', intensity: 0.7 },
     { primary: 'happy',        re: /(开心|高兴|爽|棒|太好了|好爽|超开心|喜欢|期待|得到了|拿到了|成了)/,             valence: 'positive', intensity: 0.7 },
     { primary: 'dissatisfied', re: /(失望|不满意|不喜欢|有点烂|这不行|你错了|不对吧|怎么这样|麻烦)/,                 valence: 'negative', intensity: 0.6 },
     { primary: 'sad',          re: /(累|疲惫|没力气)/,                                                                valence: 'negative', intensity: 0.5 },
@@ -674,7 +677,7 @@ function detect_intent(text) {
                '下雨', '雨', '湿', '没带伞', '阴', '潮',
                '熬夜', '加班', '凌晨', '深夜', '失眠', '赶', '台灯', '通宵', '该睡',
                '出太阳', '天晴', '放晴', '雨停', '开会', '下班', '散步', '出门',
-               '工作', '压力', '难过', '焦虑', '累'];
+               '工作'];
   for (const k of KEY) if (t.includes(k)) entities.push(k);
 
   return { category, confidence: 0.7, entities };
@@ -721,7 +724,7 @@ async function process_turn(user_message, history, system_context) {
     Promise.resolve(retrieve('forbidden',    user_message,         ctx)),
     Promise.resolve(retrieve('emotional',    user_emotion.primary, ctx)),
     Promise.resolve(retrieve('scene',        target_scene,         ctx)),
-    Promise.resolve(retrieve('micro_action', decision.policy,      ctx)),
+    Promise.resolve(retrieve('micro_action', null,                 ctx)),
     Promise.resolve(retrieve('speaking',     null,                 ctx)),
     Promise.resolve(retrieve('knowledge',    user_message,         ctx)),
   ]);
@@ -811,7 +814,7 @@ async function process_turn(user_message, history, system_context) {
 
   // ===== Step 6: CONTEXT_UPDATE =====
   // Final scene = the routed target_scene (model tag honored only if it matches).
-  const final_scene = (modelScene === target_scene) ? modelScene : target_scene;
+  const final_scene = ['normal','cafe','rainy','thinking'].includes(modelScene) ? modelScene : target_scene;
 
   return { reply, scene: final_scene };
 }
@@ -830,8 +833,8 @@ async function callLLM(messages, temperature) {
       body: JSON.stringify({
         model: MODEL,
         messages,
-        // Kimi K2 family only accepts temperature == 1; keep as-is.
-        temperature: 1,
+        // Kimi K2 family only accepts temperature == 1; other models use the decision value.
+        temperature: MODEL.startsWith('kimi-') ? 1 : temperature,
         max_tokens: 4000,
       }),
       signal: ctrl.signal,
@@ -884,7 +887,7 @@ app.post('/api/chat', async (req, res) => {
     }
     const history = (body.history || [])
       .slice(-CONFIG.MAX_HISTORY * 2)
-      .filter(m => m && typeof m.role === 'string' && typeof m.content === 'string');
+      .filter(m => m && typeof m.role === 'string' && typeof m.content === 'string' && m.content.length <= 2000);
 
     const userMsg = rawMessage.trim();
     const currentScene = VALID_SCENES.includes(body.scene) ? body.scene : 'normal';

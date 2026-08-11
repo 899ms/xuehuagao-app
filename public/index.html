@@ -716,10 +716,11 @@
   };
 
   // ---------- 全局状态 ----------
-  const history   = [];  // [{role:'user'|'assistant', content:string, time:number}]
+  const history   = [];  // [{role:'user'|'assistant', content:string, time:number, scene?:string}]
   let sending     = false;
   let lastFailed  = null;   // {msg, sceneAtSend} —— 供「重试」使用
   let serverOk    = true;   // /api/health 软检查结果，仅影响顶栏状态文案
+  let manualOverride = false; // 等待回复期间用户手动切过场景 → 迟到的响应不得覆盖场景
 
   // ---------- DOM 引用 ----------
   const sceneEls  = document.querySelectorAll('.scene');
@@ -783,6 +784,7 @@
   document.getElementById('sceneSwitch').addEventListener('click', e => {
     const b = e.target.closest('button');
     if(!b) return;
+    manualOverride = true;  // 等待中的响应到达时不得覆盖用户的选择（下次发送时清除）
     setScene(b.dataset.scene, { replayOpening: true });
   });
 
@@ -847,6 +849,7 @@
     autoresize();
     clearFailure();
     lastFailed = null;
+    manualOverride = false;  // 新一轮发送以当前场景为准，清除手动覆盖标记
     history.push({ role:'user', content: msg, time: Date.now() });
     await deliver(msg, document.body.dataset.scene || 'normal');
   }
@@ -866,8 +869,8 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: msg,
-          // 只传 {role, content}，不带本地时间戳字段
-          history: history.slice(0, -1).map(t => ({ role: t.role, content: t.content })),
+          // 只传 {role, content, scene}，不带本地时间戳字段
+          history: history.slice(0, -1).map(t => ({ role: t.role, content: t.content, scene: t.scene || undefined })),
           scene: sceneAtSend,
         }),
         signal: controller.signal,
@@ -877,12 +880,12 @@
       const reply = (data && data.reply) ? String(data.reply) : '...抱歉，我这边好像断了一下。';
       const scene = (data && data.scene) || sceneAtSend;
 
-      history.push({ role:'assistant', content: reply, time: Date.now() });
+      history.push({ role:'assistant', content: reply, time: Date.now(), scene });
       msgTimeEl.textContent = fmtTime(Date.now());
       hintEl.textContent = '点对话框可跳过打字效果。';
       srLive.textContent = '雪花膏：' + reply;
       bubble.dataset.full = reply;
-      setScene(scene);
+      if(!manualOverride) setScene(scene);  // 用户等待期间手动切过场景则尊重其选择
       typewrite(reply);
     } catch(err){
       // 失败：保留 history 中的用户消息，提供重试
@@ -891,6 +894,7 @@
     } finally {
       clearTimeout(timeout);
       sending = false;
+      retryBtn.disabled = false;  // 流程恢复，允许再次重试
       syncSendUI();
       composer.focus();
     }
@@ -901,6 +905,7 @@
     if(!lastFailed || sending) return;
     const last = history[history.length - 1];
     if(!last || last.role !== 'user' || last.content !== lastFailed.msg) return;
+    retryBtn.disabled = true;   // 防止重复点击，流程恢复（成功/再次失败）后解除
     clearFailure();
     deliver(lastFailed.msg, lastFailed.sceneAtSend);
   });
@@ -911,9 +916,9 @@
     send();
   });
   composer.addEventListener('keydown', e => {
-    if(e.key === 'Enter' && !e.shiftKey){
+    if(e.key === 'Enter' && !e.shiftKey && !e.isComposing && composer.value.trim() && !sending){
       e.preventDefault();
-      if(!e.isComposing && composer.value.trim() && !sending) send();
+      send();
     }
   });
   composer.addEventListener('input', () => {
@@ -990,9 +995,14 @@
   });
 
   // ---------- 软健康检查：只在失败时调整顶栏状态，绝不阻塞对话 ----------
-  fetch('/api/health')
-    .then(r => { serverOk = r.ok; updateBrand(); })
-    .catch(() => { serverOk = false; updateBrand(); });
+  (function(){
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 5000);  // 5s 超时按失败处理
+    fetch('/api/health', { signal: ctrl.signal })
+      .then(r => { serverOk = r.ok; })
+      .catch(() => { serverOk = false; })
+      .finally(() => { clearTimeout(t); updateBrand(); });
+  })();
 
   // 初始按钮态
   syncSendUI();
